@@ -35,4 +35,4 @@
 
 (defn -main
   [& args]
-  (println "Hello, World!"))
+  (get-labels z))
