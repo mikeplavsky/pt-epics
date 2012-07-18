@@ -16,36 +16,14 @@
   [s]
   (java.io.ByteArrayInputStream. (.getBytes s)))
 
-(defn values 
+(defn story 
   [loc,ks]
-  (assoc (map #(list % (first (xml-> loc % text))) ks))) 
+  (apply merge (map #(hash-map % (first (xml-> loc % text))) ks))) 
 
 (defn get-labels 
   [z]
   (xml-> z :story [:labels] 
-         #(values % [:labels :estimate :name])))
-
-(def example 
-"
-  <stories>
-    <story>
-      <id type='Integer'>11</id>
-      <state>Finished</state>
-    </story>
-    <story>
-      <id type='Integer'>12</id>
-      <state>Started</state>
-    </story>
-  </stories>
-")
-
-(def z1 (->
-          example
-          get-stream
-          xml/parse
-          zip/xml-zip))
-
-;(def example-proj 246825)
+         #(story % [:labels :estimate :name])))
 
 (def z (-> 
          246825 
