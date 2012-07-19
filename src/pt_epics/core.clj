@@ -1,4 +1,6 @@
-(ns pt-epics.core) 
+(ns pt-epics.core
+  (:gen-class)) 
+
 (use '[clojure.data.zip.xml :only (attr text xml->)])
 (require '[clj-http.client :as client]
          '[clojure.xml :as xml]
@@ -39,7 +41,16 @@
   [id]
   (-> id get-project-stories :body get-stream xml/parse zip/xml-zip))
 
-(def projects (pmap #(zip-project %) [246825 454855 52499 78102 52476]))
+(def project-ids [246825 454855 52499 78102 52476])
+
+(defn projects [] (map #(zip-project %) project-ids))
+
+(defn pprojects 
+  []
+  (let [agents (map #(agent %) project-ids)]
+    (doall (map #(send-off % (fn [id] (zip-project id))) agents))
+    (apply await agents)
+    (map #(deref %) agents)))
 
 (defn labels 
   [ps] 
@@ -47,4 +58,5 @@
 
 (defn -main
   [& args]
-  (labels projects))
+  (println (labels (pprojects)))
+  (shutdown-agents))
