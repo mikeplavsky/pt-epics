@@ -1,9 +1,10 @@
-(ns pt-epics.core)
+(ns pt-epics.core) 
 (use '[clojure.data.zip.xml :only (attr text xml->)])
 (require '[clj-http.client :as client]
          '[clojure.xml :as xml]
          '[clojure.zip :as zip]
-         '[clojure.string :as str])
+         '[clojure.string :as str]
+         '[clojure.set])
 
 (def pt-url 
   "https://www.pivotaltracker.com/services/v3/projects/%s/stories?type:feature,release")
@@ -40,10 +41,10 @@
 
 (def projects (pmap #(zip-project %) [246825 454855 52499 78102 52476]))
 
-(def labels 
+(defn labels 
   [ps] 
   (apply clojure.set/union (map #(get-labels %) ps)))
 
 (defn -main
   [& args]
-  (get-labels z))
+  (labels projects))
