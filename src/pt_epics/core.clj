@@ -27,11 +27,11 @@
 (defn get-stories 
   [z]
   (xml-> z :story [:labels] 
-         #(story % [:labels :estimate :name])))
+         #(story % [:labels :estimate])))
 
 (defn get-labels
   [z]
-  (-> (map #(str/split % #",") (xml-> z :story :labels text)) flatten set))
+  (-> (map #(str/split (str/lower-case %) #",") (xml-> z :story :labels text)) flatten set))
 
 (defn get-labels-map
   [labels]
@@ -59,7 +59,9 @@
 (defn label-weight
   [label,stories]
   (reduce #(+ %1 
-              (if (str1/substring? label (:labels %2)) (read-string (:estimate %2)) 0)) 
+              (if (str1/substring? (str/lower-case label) (str/lower-case (:labels %2))) 
+                (read-string (:estimate %2)) 
+                0)) 
           0 stories))
 
 (defn epics 
