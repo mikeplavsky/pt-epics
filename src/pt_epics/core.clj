@@ -1,11 +1,11 @@
-(ns pt-epics.core
-  (:gen-class)) 
+(ns pt-epics.core)
 
 (use '[clojure.data.zip.xml :only (attr text xml->)])
 (require '[clj-http.client :as client]
          '[clojure.xml :as xml]
          '[clojure.zip :as zip]
          '[clojure.string :as str]
+         '[clojure.contrib.string :as str1]
          '[clojure.set])
 
 (def pt-url 
@@ -55,6 +55,19 @@
 (defn labels 
   [ps] 
   (apply clojure.set/union (map #(get-labels %) ps)))
+
+(defn label-weight
+  [label,stories]
+  (reduce #(+ %1 
+              (if (str1/substring? label (:labels %2)) (read-string (:estimate %2)) 0)) 
+          0 stories))
+
+(defn epics 
+  []
+  (let [ps (pprojects)
+        ls (labels ps)
+        s (->> ps (map #(get-stories %)) flatten)]
+  (apply merge (map #(hash-map % (label-weight % s)) ls))))
 
 (defn -main
   [& args]
