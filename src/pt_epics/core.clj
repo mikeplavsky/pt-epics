@@ -38,19 +38,18 @@
   (->> (map #(list % {}) labels) flatten (apply hash-map)))
 
 (defn zip-project
-  [id]
-  (-> id get-project-stories :body get-stream xml/parse zip/xml-zip))
+  [stories]
+  (-> stories :body get-stream xml/parse zip/xml-zip))
 
 (def project-ids [246825 454855 52499 78102 52476])
 
-(defn projects [] (map #(zip-project %) project-ids))
-
 (defn pprojects 
   []
-  (let [agents (map #(agent %) project-ids)]
-    (doall (map #(send-off % (fn [id] (zip-project id))) agents))
+  (let [agents (map #(agent %) project-ids)
+        task #(get-project-stories %)]
+    (doall (map #(send-off % task) agents))
     (apply await agents)
-    (map #(deref %) agents)))
+    (map #(zip-project (deref %)) agents)))
 
 (defn labels 
   [ps] 
@@ -73,5 +72,5 @@
 
 (defn -main
   [& args]
-  (println (labels (pprojects)))
+  (doall (map #(println (get % 0) (get % 1)) (epics)))
   (shutdown-agents))
