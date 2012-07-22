@@ -1,5 +1,4 @@
 (ns pt-epics.core)
-
 (use '[clojure.data.zip.xml :only (attr text xml->)])
 (require '[clj-http.client :as client]
          '[clojure.xml :as xml]
@@ -33,10 +32,6 @@
   [z]
   (-> (map #(str/split (str/lower-case %) #",") (xml-> z :story :labels text)) flatten set))
 
-(defn get-labels-map
-  [labels]
-  (->> (map #(list % {}) labels) flatten (apply hash-map)))
-
 (defn zip-project
   [stories]
   (-> stories :body get-stream xml/parse zip/xml-zip))
@@ -58,7 +53,7 @@
 (defn label-weight
   [label,stories]
   (reduce #(+ %1 
-              (if (str1/substring? (str/lower-case label) (str/lower-case (:labels %2))) 
+              (if (str1/substring? label (str/lower-case (:labels %2))) 
                 (read-string (:estimate %2)) 
                 0)) 
           0 stories))
@@ -68,7 +63,8 @@
   (let [ps (pprojects)
         ls (labels ps)
         s (->> ps (map #(get-stories %)) flatten)]
-  (apply merge (map #(hash-map % (label-weight % s)) ls))))
+  (apply merge 
+         (map #(hash-map % (label-weight % s)) ls))))
 
 (defn -main
   [& args]
