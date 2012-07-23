@@ -7,8 +7,7 @@
          '[clojure.contrib.string :as str1]
          '[clojure.set])
 
-(def pt-url 
-  "https://www.pivotaltracker.com/services/v3/projects/%s/stories?type:feature,release")
+(def pt-url "https://www.pivotaltracker.com/services/v3/projects/%s/iterations")
 
 (defn get-project-stories 
   [id]
@@ -25,12 +24,12 @@
 
 (defn get-stories 
   [z]
-  (xml-> z :story [:labels] 
-         #(story % [:labels :estimate])))
+  (xml-> z :iteration :stories :story [:labels] 
+         #(story % [:labels :estimate :accepted_at])))
 
 (defn get-labels
   [z]
-  (-> (map #(str/split (str/lower-case %) #",") (xml-> z :story :labels text)) flatten set))
+  (-> (map #(str/split (str/lower-case %) #",") (xml-> z :iteration :stories :story :labels text)) flatten set))
 
 (defn zip-project
   [stories]
@@ -58,11 +57,25 @@
                 0)) 
           0 stories))
 
+(defn to-long
+  [d]
+  (.getTime (java.util.Date. d)))
+
+(def start-time "2012/05/15")
+
+(defn to-release
+  [s]
+  (filter #(if (:accepted_at %)
+             (< (to-long start-time) 
+              (to-long (first (str/split (:accepted_at %) #" "))))
+             true) 
+          s))
+
 (defn epics 
   []
   (let [ps (pprojects)
         ls (labels ps)
-        s (->> ps (map #(get-stories %)) flatten)]
+        s (->> ps (map #(to-release (get-stories %))) flatten)]
   (apply merge 
          (map #(hash-map % (label-weight % s)) ls))))
 
