@@ -13,7 +13,7 @@
 (defn get-project-stories 
   [id]
   (client/get (format pt-url id)
-  {:headers {"X-TrackerToken" "d85f22694013ecaa075b0e938f104854"}}))
+  {:headers {"X-TrackerToken" (System/getenv "PT_API_TOKEN")}}))
 
 (defn get-stream
   [s]
