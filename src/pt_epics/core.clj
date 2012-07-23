@@ -8,6 +8,8 @@
          '[clojure.set])
 
 (def pt-url "https://www.pivotaltracker.com/services/v3/projects/%s/iterations")
+(def project-ids [246825 454855 52499 78102 52476])
+(def start-time "2012/05/15")
 
 (defn get-project-stories 
   [id]
@@ -35,8 +37,6 @@
   [stories]
   (-> stories :body get-stream xml/parse zip/xml-zip))
 
-(def project-ids [246825 454855 52499 78102 52476])
-
 (defn pprojects 
   []
   (let [agents (map #(agent %) project-ids)
@@ -61,7 +61,6 @@
   [d]
   (.getTime (java.util.Date. d)))
 
-(def start-time "2012/05/15")
 
 (defn to-release
   [s]
