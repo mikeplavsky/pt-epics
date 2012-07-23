@@ -10,11 +10,12 @@
 (def pt-url "https://www.pivotaltracker.com/services/v3/projects/%s/iterations")
 (def project-ids [246825 454855 52499 78102 52476])
 (def start-time "2012/05/15")
+(def api-token (System/getenv "PT_API_TOKEN"))
 
 (defn get-project-stories 
   [id]
   (client/get (format pt-url id)
-  {:headers {"X-TrackerToken" (System/getenv "PT_API_TOKEN")}}))
+  {:headers {"X-TrackerToken" api-token}}))
 
 (defn get-stream
   [s]
@@ -31,7 +32,11 @@
 
 (defn get-labels
   [z]
-  (-> (map #(str/split (str/lower-case %) #",") (xml-> z :iteration :stories :story :labels text)) flatten set))
+  (-> (map 
+        #(str/split (str/lower-case %) #",")
+        (xml-> z :iteration :stories :story :labels text)) 
+    flatten 
+    set))
 
 (defn zip-project
   [stories]
@@ -62,19 +67,22 @@
   (.getTime (java.util.Date. d)))
 
 
-(defn to-release
-  [s]
+(defn from-rtm
+  [stories]
   (filter #(if (:accepted_at %)
              (< (to-long start-time) 
               (to-long (first (str/split (:accepted_at %) #" "))))
              true) 
-          s))
+          stories))
 
 (defn epics 
   []
   (let [ps (pprojects)
         ls (labels ps)
-        s (->> ps (map #(to-release (get-stories %))) flatten)]
+        s (->> ps 
+            (map 
+              #(from-rtm (get-stories %))) 
+            flatten)]
   (apply merge 
          (map #(hash-map % (label-weight % s)) ls))))
 
