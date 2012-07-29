@@ -33,7 +33,7 @@
 (defn get-labels
   [z]
   (-> (map 
-        #(str/split (str/lower-case %) #",")
+        #(map str/trim (str/split (str/lower-case %) #","))
         (xml-> z :iteration :stories :story :labels text)) 
     flatten 
     set))
