@@ -30,10 +30,14 @@
   (xml-> z :iteration :stories :story [:labels] 
          #(story % [:labels :estimate :accepted_at])))
 
+(defn split-labels
+  [labels]
+  (map str/trim (str/split (str/lower-case labels) #",")))
+
 (defn get-labels
   [z]
   (-> (map 
-        #(map str/trim (str/split (str/lower-case %) #","))
+        #(split-labels %)
         (xml-> z :iteration :stories :story :labels text)) 
     flatten 
     set))
@@ -57,7 +61,7 @@
 (defn label-weight
   [label,stories]
   (reduce #(+ %1 
-              (if (str1/substring? label (str/lower-case (:labels %2))) 
+              (if (some #{label} (split-labels (:labels %2))) 
                 (read-string (:estimate %2)) 
                 0)) 
           0 stories))

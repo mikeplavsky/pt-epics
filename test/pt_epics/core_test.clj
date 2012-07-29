@@ -21,6 +21,11 @@
         <estimate>12</estimate>             
         <accepted_at>0</accepted_at>             
       </story>
+      <story>
+        <labels>RESTs</labels>
+        <estimate>12</estimate>             
+        <accepted_at>0</accepted_at>             
+      </story>
     </stories>
   </iteration>              
 </project>              
@@ -36,5 +41,6 @@
     (let [p (zip-project project1) 
           s (get-stories p)]
       (is (= (label-weight "news" s) 11))
+      (is (= (label-weight "rests" s) 35))
       (is (= (label-weight "dashboards" s) 23)))))      
 
