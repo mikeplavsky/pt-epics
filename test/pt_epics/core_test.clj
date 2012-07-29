@@ -12,14 +12,14 @@
   <iteration>
     <stories>
       <story>
-        <labels>
-          Dashboards,RESTs,News
-        </labels>
+        <labels> Dashboards,RESTs ,News </labels>
+        <estimate>11</estimate>             
+        <accepted_at>0</accepted_at>             
       </story>
       <story>
-        <labels>
-          Dashboards,RESTs
-        </labels>
+        <labels>Dashboards,RESTs</labels>
+        <estimate>12</estimate>             
+        <accepted_at>0</accepted_at>             
       </story>
     </stories>
   </iteration>              
@@ -30,4 +30,11 @@
   (testing "should get right labels"
     (let  [p (zip-project project1)]
       (is (= (get-labels p) #{"dashboards" "rests" "news"})))))
+
+(deftest test-label-weight
+  (testing "should get right weight"
+    (let [p (zip-project project1) 
+          s (get-stories p)]
+      (is (= (label-weight "news" s) 11))
+      (is (= (label-weight "dashboards" s) 23)))))      
 
