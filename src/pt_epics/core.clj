@@ -5,7 +5,8 @@
          '[clojure.zip :as zip]
          '[clojure.string :as str]
          '[clojure.contrib.string :as str1]
-         '[clojure.set])
+         '[clojure.set]
+         '[clojure.pprint])
 
 (def pt-url "https://www.pivotaltracker.com/services/v3/projects/%s/iterations")
 (def project-ids [246825 454855 52499 78102 52476])
@@ -70,17 +71,45 @@
   [d]
   (.getTime (java.util.Date. d)))
 
+(defn just-date 
+  [story]
+  (first (str/split (:accepted_at story) #" ")))
+
 (defn from-rtm
   [stories]
   (filter #(if (:accepted_at %)
              (< (to-long start-time) 
-              (to-long (first (str/split (:accepted_at %) #" "))))
+              (to-long (just-date %)))
              true) 
           stories))
 
-(defn product-weight 
+(defn estimate
+  [story]
+  (read-string (:estimate story)))
+
+(defn incs
   [stories]
-  (reduce #(+ %1 (read-string (:estimate %2))) 0 stories))
+   (reduce 
+     #(conj %1 
+            (let [d (just-date %2)
+                  e (estimate %2)
+                  prev (get %1 d)] 
+               {d (if prev (+ e prev) e)}))
+     {} stories))
+
+(defn burndown
+  [stories]
+  (let [accepted (filter #(:accepted_at %) stories)
+        total (reduce #(+ %1 (read-string (:estimate %2))) 0 stories)
+        current (fn [l,c] (- (:last l) (get c 1)))]
+    (-> 
+      (reduce #(conj %1 
+                   (let [c (- (:last %1) (get %2 1))]  
+                      {(get %2 0) c :last c}))
+            {:last total start-time total} 
+            (sort (incs accepted)))
+       (dissoc :last)
+       sort)))
 
 (defn stories 
   [projects]
@@ -93,10 +122,9 @@
   (let [ps (pprojects)
         ls (labels ps)
         s (stories ps)]
-  (apply merge 
-         (map #(hash-map % (label-weight % s)) ls))))
+  (reduce #(conj %1 {%2 (label-weight %2 s)}) {} ls)))
 
 (defn -main
   [& args]
-  (doall (map #(println (get % 0) (get % 1)) (epics)))
+  (clojure.pprint/pprint (epics))
   (shutdown-agents))
