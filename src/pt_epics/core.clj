@@ -70,7 +70,6 @@
   [d]
   (.getTime (java.util.Date. d)))
 
-
 (defn from-rtm
   [stories]
   (filter #(if (:accepted_at %)
@@ -79,14 +78,21 @@
              true) 
           stories))
 
+(defn product-weight 
+  [stories]
+  (reduce #(+ %1 (read-string (:estimate %2))) 0 stories))
+
+(defn stories 
+  [projects]
+  (->> projects 
+      (map #(from-rtm (get-stories %))) 
+      flatten))
+
 (defn epics 
   []
   (let [ps (pprojects)
         ls (labels ps)
-        s (->> ps 
-            (map 
-              #(from-rtm (get-stories %))) 
-            flatten)]
+        s (stories ps)]
   (apply merge 
          (map #(hash-map % (label-weight % s)) ls))))
 
