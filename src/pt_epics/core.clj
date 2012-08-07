@@ -100,8 +100,7 @@
 (defn burndown
   [stories]
   (let [accepted (filter #(:accepted_at %) stories)
-        total (reduce #(+ %1 (read-string (:estimate %2))) 0 stories)
-        current (fn [l,c] (- (:last l) (get c 1)))]
+        total (reduce #(+ %1 (read-string (:estimate %2))) 0 stories)]
     (-> 
       (reduce #(conj %1 
                    (let [c (- (:last %1) (get %2 1))]  
