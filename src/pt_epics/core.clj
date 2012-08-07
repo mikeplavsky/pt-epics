@@ -11,7 +11,7 @@
 
 (def pt-url "https://www.pivotaltracker.com/services/v3/projects/%s/iterations")
 (def project-ids [246825 454855 52499 78102 52476])
-(def start-time "2012/05/15")
+(def ^:dynamic start-time "2012/05/15")
 (def api-token (System/getenv "PT_API_TOKEN"))
 
 (defn get-project-stories 

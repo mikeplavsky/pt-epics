@@ -9,17 +9,17 @@
       <story>
         <labels> Dashboards,RESTs ,News </labels>
         <estimate>11</estimate>             
-        <accepted_at>2012/05/14 11</accepted_at>             
+        <accepted_at>2012/05/14 11:24</accepted_at>             
       </story>
       <story>
         <labels>Dashboards,RESTs</labels>
         <estimate>12</estimate>             
-        <accepted_at>2012/06/12 11</accepted_at>             
+        <accepted_at>2012/06/12 11:24</accepted_at>             
       </story>
       <story>
         <labels>RESTs</labels>
         <estimate>12</estimate>             
-        <accepted_at>2012/07/14 11</accepted_at>             
+        <accepted_at>2012/07/14 11:24</accepted_at>             
       </story>
       <story>
         <labels>Policies</labels>
@@ -60,6 +60,8 @@
   (testing "should get right decrements"
     (let [p [(zip-project project1)]
           s (stories p)]
-      (is (= (burndown s) [["2012/05/15" 46] ["2012/06/12" 34] ["2012/07/14" 22]])))))
+      (is (= (burndown s) [["2012/05/15" 46] ["2012/06/12" 34] ["2012/07/14" 22]]))
+      (binding [start-time "2012/06/14"]
+        (is (= (burndown (stories p)) [["2012/06/14" 34] ["2012/07/14" 22]]))))))
 
 
