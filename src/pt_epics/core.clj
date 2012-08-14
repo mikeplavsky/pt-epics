@@ -125,7 +125,16 @@
 
 (defn -main
   [& args]
-  (let [ps (pprojects)]
+  (let [ps (pprojects)
+        b (-> ps stories burndown)
+        delta (- 
+                   (-> b last first to-long) 
+                   (-> b first first to-long)) 
+        done (- (-> b first last) (-> b last last))
+        left (- (-> b first last) done)
+        left-ms (-> (/ delta done) (* left) int)
+        rtm (java.util.Date. (+ (.getTime (java.util.Date.)) left-ms))]
     (-> ps epics pprint)
-    (->> ps stories burndown flatten (apply sorted-map) pprint))
+    (->> b flatten (apply sorted-map) pprint)
+    (println "Days left till RTM: " rtm))
   (shutdown-agents))
