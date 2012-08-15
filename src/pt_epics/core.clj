@@ -132,9 +132,9 @@
                    (-> b first first to-long)) 
         done (- (-> b first last) (-> b last last))
         left (- (-> b first last) done)
-        left-ms (-> (/ delta done) (* left) int)
+        left-ms (-> delta (/ done) (* left) long)
         rtm (java.util.Date. (+ (.getTime (java.util.Date.)) left-ms))]
     (-> ps epics pprint)
     (->> b flatten (apply sorted-map) pprint)
-    (println "Days left till RTM: " rtm))
+    (println "Projected RTM: " (.toString rtm)))
   (shutdown-agents))
