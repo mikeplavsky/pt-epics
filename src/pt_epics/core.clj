@@ -8,6 +8,7 @@
          '[clojure.contrib.string :as str1]
          '[clojure.set]
          '[clojure.pprint])
+(import 'java.util.Date)
 
 (def pt-url "https://www.pivotaltracker.com/services/v3/projects/%s/iterations")
 (def project-ids [246825 454855 52499 78102 52476])
@@ -70,7 +71,7 @@
 
 (defn to-long
   [d]
-  (.getTime (java.util.Date. d)))
+  (.getTime (Date. d)))
 
 (defn just-date 
   [story]
@@ -133,7 +134,7 @@
         done (- (-> b first last) (-> b last last))
         left (- (-> b first last) done)
         left-ms (-> delta (/ done) (* left) long)
-        rtm (java.util.Date. (+ (.getTime (java.util.Date.)) left-ms))]
+        rtm (Date. (+ (.getTime (Date.)) left-ms))]
     (-> ps epics pprint)
     (->> b flatten (apply sorted-map) pprint)
     (println "Projected RTM: " (.toString rtm)))
