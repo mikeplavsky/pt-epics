@@ -15,6 +15,7 @@
 (def project-ids [246825 454855 52499 78102 52476])
 (def ^:dynamic start-time "2012/05/15")
 (def api-token (System/getenv "PT_API_TOKEN"))
+(def pt-db "http://localhost:8001/pt")
 
 (defn get-project-stories 
   [id]
@@ -125,6 +126,16 @@
         s (stories projects)]
   (reduce #(conj %1 {%2 (label-weight %2 s)}) {} ls)))
 
+(defn update-document
+  [id doc]
+  (let [prev (clutch/get-document pt-db id)
+        rev (:_rev prev)
+        d (assoc 
+            (if rev (assoc doc :_rev rev) 
+              doc) 
+            :_id id)]
+    (clutch/put-document pt-db d)))
+
 (defn -main
   [& args]
   (let [pt-db "http://localhost:8001/pt"
@@ -137,10 +148,9 @@
         left (- (-> b first last) done)
         left-ms (-> delta (/ done) (* left) long)
         rtm (Date. (+ (.getTime (Date.)) left-ms))]
-    (clutch/with-db pt-db 
-      (clutch/put-document 
-        (assoc (assoc (-> ps epics) :_id "epics") 
-               :_rev (:_rev (clutch/get-document "epics")))))
+    (update-document "epics" (-> ps epics))
+    (update-document "burndown" (->> b flatten (apply hash-map)))
+    (update-document "rtm" {"projected date" (.toString rtm)})
     (-> ps epics pprint)
     (->> b flatten (apply sorted-map) pprint)
     (println "Projected RTM: " (.toString rtm)))
