@@ -7,7 +7,8 @@
          '[clojure.string :as str]
          '[clojure.contrib.string :as str1]
          '[clojure.set]
-         '[clojure.pprint])
+         '[clojure.pprint]
+         '[com.ashafa.clutch :as clutch])
 (import 'java.util.Date)
 
 (def pt-url "https://www.pivotaltracker.com/services/v3/projects/%s/iterations")
@@ -126,7 +127,8 @@
 
 (defn -main
   [& args]
-  (let [ps (pprojects)
+  (let [pt-db "http://localhost:8001/pt"
+        ps (pprojects)
         b (-> ps stories burndown)
         delta (- 
                    (-> b last first to-long) 
@@ -135,6 +137,10 @@
         left (- (-> b first last) done)
         left-ms (-> delta (/ done) (* left) long)
         rtm (Date. (+ (.getTime (Date.)) left-ms))]
+    (clutch/with-db pt-db 
+      (clutch/put-document 
+        (assoc (assoc (-> ps epics) :_id "epics") 
+               :_rev (:_rev (clutch/get-document "epics")))))
     (-> ps epics pprint)
     (->> b flatten (apply sorted-map) pprint)
     (println "Projected RTM: " (.toString rtm)))
