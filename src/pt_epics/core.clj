@@ -134,7 +134,8 @@
             (if rev (assoc doc :_rev rev) 
               doc) 
             :_id id)]
-    (clutch/put-document pt-db d)))
+    (clutch/put-document pt-db 
+                         (assoc d "actual on" (.toString (Date.))))))
 
 (defn -main
   [& args]
