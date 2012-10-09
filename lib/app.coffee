@@ -1,7 +1,8 @@
 exports.views =
-  rtm:
+  burndown:
     map: (doc)->
-      if doc._id == "rtm"
-        emit null,
-          rtm: doc["projected date"]
-          actual: doc["actual on"]
+      if doc._id == "burndown"
+        for key,val of doc
+          if key not in ["_id", "_rev"]
+            emit key, val
+
