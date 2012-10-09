@@ -2,6 +2,7 @@
 /lib
 /classes
 /checkouts
+/packages
 pom.xml
 *.res
 *.swp
