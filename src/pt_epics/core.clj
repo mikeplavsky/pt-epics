@@ -12,8 +12,14 @@
 (import 'java.util.Date)
 
 (def pt-url "https://www.pivotaltracker.com/services/v3/projects/%s/iterations")
-(def project-ids [246825 454855 52499 78102 52476])
-(def ^:dynamic start-time "2012/05/15")
+
+(def project-ids 
+    (vec 
+      (map read-string 
+           (str/split 
+             (System/getenv "PT_PROJECTS" ) #" "))))
+
+(def ^:dynamic start-time "2015/12/04")
 (def api-token (System/getenv "PT_API_TOKEN"))
 (def pt-db "http://localhost:8001/pt")
 
@@ -32,8 +38,8 @@
 
 (defn get-stories 
   [z]
-  (xml-> z :iteration :stories :story [:labels] 
-         #(story % [:labels :estimate :accepted_at])))
+  (xml-> z :iteration :stories :story  
+         #(story % [:labels :estimate :accepted_at :name :story_type])))
 
 (defn split-labels
   [labels]
@@ -141,7 +147,8 @@
   [& args]
   (let [pt-db "http://localhost:8001/pt"
         ps (pprojects)
-        b (-> ps stories burndown)
+        ss (filter #(not (nil? (:estimate %))) (-> ps stories))
+        b (-> ss burndown)
         delta (- 
                    (-> b last first to-long) 
                    (-> b first first to-long)) 
@@ -149,10 +156,7 @@
         left (- (-> b first last) done)
         left-ms (-> delta (/ done) (* left) long)
         rtm (Date. (+ (.getTime (Date.)) left-ms))]
-    (update-document "epics" (-> ps epics))
-    (update-document "burndown" (->> b flatten (apply hash-map)))
-    (update-document "rtm" {"projected date" (.toString rtm)})
-    (-> ps epics pprint)
+    (comment (-> ps epics pprint))
     (->> b flatten (apply sorted-map) pprint)
     (println "Projected RTM: " (.toString rtm)))
   (shutdown-agents))
